@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">快速锁屏</string>
+    <string name="admin_receiver_status_enabled">成功激活\"快速锁屏\"</string>
+    <string name="admin_receiver_status_disable_warning">确定要禁用快速锁屏吗？\n版本：0.0.1\n开发者：Seven\n邮件：yihongyuelan@gmail.com\n版权所有 2013 Seven</string>
+    <string name="admin_receiver_status_disabled">"\"快速锁屏\"已被禁用</string>
+    <string name="admin_device_explain">如果要卸载此程序，请先在\"系统设置 > 安全 > 设备管理器\"，然后取消勾选\"快速锁屏\"</string>
+    <string name="user_guide_confirm">确定</string>
+
+</resources>
