@@ -15,20 +15,27 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.seven.quicklock.MainActivity"
-            android:label="@string/app_name" >
+            android:name="com.seven.quicklock.QuickLockMainActivity"
+            android:excludeFromRecents="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoDisplay" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name="com.seven.quicklock.QuickLockDeviceReceiver"
-                  android:permission="android.permission.BIND_DEVICE_ADMIN">
-                  <meta-data  android:name="android.app.device_admin" 
-                              android:resource="@xml/lock_screen" />
-                  <intent-filter>
-                        <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-                  </intent-filter>
+
+        <receiver
+            android:name="com.seven.quicklock.QuickLockDeviceReceiver"
+            android:permission="android.permission.BIND_DEVICE_ADMIN" >
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/lock_screen" />
+
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
         </receiver>
     </application>
 

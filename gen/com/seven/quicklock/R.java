@@ -33,6 +33,10 @@ public final class R {
         public static final int admin_receiver_status_disabled=0x7f050003;
         public static final int admin_receiver_status_enabled=0x7f050001;
         public static final int app_name=0x7f050000;
+        public static final int dialog_active=0x7f05000c;
+        public static final int dialog_cancel=0x7f05000d;
+        public static final int dialog_content_msg=0x7f05000f;
+        public static final int dialog_title=0x7f05000e;
         public static final int howto_uninstall_answer=0x7f05000b;
         public static final int howto_uninstall_question=0x7f05000a;
         public static final int howto_use_answer=0x7f050009;

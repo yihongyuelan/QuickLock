@@ -11,7 +11,7 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 
-public class MainActivity extends Activity {
+public class QuickLockMainActivity extends Activity {
     private DevicePolicyManager mPolicyManager;
     private ComponentName mComponetName;
     private PowerManager mPowerManager;
