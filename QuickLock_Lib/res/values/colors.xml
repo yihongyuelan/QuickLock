@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- holo colors: -->
+    <color name="sdl_btn_bg_dark">#990099cc</color>
+    <color name="sdl_separator_dark">#12ffffff</color>
+    <color name="sdl_title_separator_dark">#ff33b5e5</color>
+    <color name="sdl_title_text_dark">#ff33b5e5</color>
+    <color name="sdl_message_text_dark">#ffffff</color>
+    <color name="sdl_btn_text_color_dark">#ffffffff</color>
+
+</resources>
