@@ -14,5 +14,6 @@
     <string name="dialog_message">第一次使用请先激活本程序，本软件完全免费并开源，不含任何广告以及恶意代码，请放心使用。\n现在就激活吗？</string>
     <string name="dialog_btn_positive">激活</string>
     <string name="dialog_btn_negative">取消</string>
+    <string name="dialog_checkbox_info">创建快捷方式</string>
 
 </resources>

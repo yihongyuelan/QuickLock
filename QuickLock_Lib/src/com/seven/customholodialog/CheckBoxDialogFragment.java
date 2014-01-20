@@ -6,34 +6,38 @@ import android.view.View;
 import android.widget.CheckBox;
 
 
-public abstract class CheckBoxDialogFragment extends BaseDialogFragment{
+public class CheckBoxDialogFragment extends BaseDialogFragment{
 
-    private CheckBox mCheckBox;
-    private String content;
+    private DialogInfo mInfo;
 
-    public CheckBoxDialogFragment(String content) {
-        this.content = content;
-    }
-
-    public CheckBoxDialogFragment(int contentResourceId) {
-        this.content = getActivity().getString(contentResourceId);
-    }
-
-    public abstract Builder buildCheckBox(BuilderCheckBox builder);
-
-    public class BuilderCheckBox {
-        
+    public CheckBoxDialogFragment(DialogInfo info) {
+        this.mInfo = info;
     }
 
     @Override
     public Builder build(Builder builder) {
+        builder.setTitle(mInfo.title);
+        builder.setMessage(mInfo.message);
+        builder.setPositiveButton(mInfo.positiveButtonText, mInfo.positiveButtonListener);
+        builder.setNegativeButton(mInfo.negativeButtonText, mInfo.negativeButtonListener);
         View viewCheckBox = (CheckBox) LayoutInflater.from(getActivity()).inflate(R.layout.dialog_part_checkbox, null);
-        mCheckBox = (CheckBox) viewCheckBox.findViewById(R.id.dialog_checkbox);
-        if (null != content) {
-            mCheckBox.setText(content);
-        }
+        CheckBox checkBox = (CheckBox) viewCheckBox.findViewById(R.id.dialog_checkbox);
+        checkBox.setOnCheckedChangeListener(mInfo.checkedChangeListener);
+        checkBox.setText(mInfo.checkBoxInfo);
         builder.setView(viewCheckBox);
         return builder;
+    }
+
+    @Override
+    public void onPause() {
+        exit();
+        super.onPause();
+    }
+
+    private void exit() {
+        if (null != mInfo.activity) {
+            mInfo.activity.finish();
+        }
     }
 
 }

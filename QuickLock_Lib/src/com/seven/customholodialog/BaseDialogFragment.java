@@ -91,6 +91,10 @@ public abstract class BaseDialogFragment extends DialogFragment {
             mView = view;
         }
 
+        public void setDismissListener() {
+            
+        }
+
         public View create() {
 //                if (null == mCheckBox) {
 //                    mCheckBox = (CheckBox) viewMessage.findViewById(R.id.dialog_checkbox);

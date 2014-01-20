@@ -1,12 +1,23 @@
 
 package com.seven.quicklock;
 
+import com.seven.customholodialog.CheckBoxDialogFragment;
+import com.seven.customholodialog.DialogInfo;
+import com.seven.quicklock.QuickLockActiveDialog.CheckChangeListener;
+import com.seven.quicklock.QuickLockActiveDialog.NegativeButtonListener;
+import com.seven.quicklock.QuickLockActiveDialog.PositiveButtonListener;
+
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,13 +26,17 @@ import android.content.Intent;
 
 public class QuickLockMainActivity extends Activity {
     private static final String PKG_NAME = "com.seven.quicklock";
+    private static final String TAG = "QuickLockActiveDialog";
     private DevicePolicyManager mPolicyManager;
     private PowerManager mPowerManager;
     private boolean isAddShortCut = false;
     private Context mContext;
     private Activity mActivity;
     private ComponentName mComponetName;
-    private QuickLockActiveDialogFragment mDialogFragment = null;
+    private DialogInfo mDialogInfo;
+    private CheckBoxDialogFragment mDialogFragment;
+    private QuickLockUtils mUtils;
+    private boolean shouldCreateShortcuts = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,10 +49,64 @@ public class QuickLockMainActivity extends Activity {
     private void init() {
         mContext = this;
         mActivity = this;
+        mUtils = QuickLockUtils.getInstance();
         mPolicyManager = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
         mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
         mComponetName = new ComponentName(this, QuickLockDeviceReceiver.class);
-        mDialogFragment = QuickLockActiveDialogFragment.getInstance(mActivity);
+        mDialogInfo = getDialogInfo();
+        mDialogFragment = new CheckBoxDialogFragment(mDialogInfo);
+    }
+
+    private DialogInfo getDialogInfo() {
+        DialogInfo dialogInfo = new DialogInfo();
+        dialogInfo.activity = mActivity;
+        dialogInfo.title = getString(R.string.dialog_title);
+        dialogInfo.message = getString(R.string.dialog_message);
+        dialogInfo.checkBoxInfo = getString(R.string.dialog_checkbox_info);
+        dialogInfo.positiveButtonText = getString(R.string.dialog_btn_positive);
+        dialogInfo.negativeButtonText = getString(R.string.dialog_btn_negative);
+        dialogInfo.positiveButtonListener = new PositiveButtonListener();
+        dialogInfo.negativeButtonListener = new NegativeButtonListener();
+        dialogInfo.checkedChangeListener = new CheckChangeListener();
+        return dialogInfo;
+    }
+
+    private void showActiveDialog() {
+        if (null != mDialogFragment) {
+            mDialogFragment.show(mActivity.getFragmentManager(), TAG);
+        }
+    }
+
+    private void dismissActiveDialog() {
+        if (null != mDialogFragment) {
+            mDialogFragment.dismiss();
+            mDialogFragment = null;
+        }
+    }
+
+    public class PositiveButtonListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Log.i("Seven", "PositiveButton click");
+            activeDevice();
+            dismissActiveDialog();
+        }
+    }
+
+    public class NegativeButtonListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Log.i("Seven", "NegativeButton click");
+            dismissActiveDialog();
+        }
+    }
+
+    public class CheckChangeListener implements OnCheckedChangeListener {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            Log.i("Seven", "isChecked="+isChecked);
+            shouldCreateShortcuts = isChecked;
+        }
     }
 
     private void lockScreen() {
@@ -48,53 +117,20 @@ public class QuickLockMainActivity extends Activity {
             exit();
         } else {
             showActiveDialog();
-            //showConfirmDialog();
         }
     }
 
-    private void showActiveDialog() {
-        if (null != mDialogFragment) {
-            mDialogFragment.show(mComponetName);
+    private void activeDevice() {
+        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mComponetName);
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                getString(R.string.admin_device_explain));
+        startActivity(intent);
+        if (shouldCreateShortcuts) {
+            //can't work
+            //mUtils.addShortCut(mContext, PKG_NAME);
         }
     }
-
-    private void showConfirmDialog() {
-        new AlertDialog.Builder(this).setTitle(R.string.dialog_title)
-                .setMessage(R.string.dialog_content_msg)
-//                .setMultiChoiceItems(new String[]{"Add ShortCut?"}, new boolean[]{true}, new DialogInterface.OnMultiChoiceClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-//                        if (0 == which && isChecked) {
-//                            isAddShortCut = true;
-//                        }else {
-//                            isAddShortCut = false;
-//                        }
-//                    }
-//                })
-                .setPositiveButton(R.string.dialog_active, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (isAddShortCut) {
-                            QuickLockUtils.getInstance().addShortCut(mContext, PKG_NAME);
-                        }
-//                        activeDevice();
-                        exit();
-                    }
-                }).setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        exit();
-                    }
-                }).show();
-    }
-
-//    private void activeDevice() {
-//        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-//        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mComponetName);
-//        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-//                getString(R.string.admin_device_explain));
-//        startActivity(intent);
-//    }
 
     private void exit() {
         finish();
