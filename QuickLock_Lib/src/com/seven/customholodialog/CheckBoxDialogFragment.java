@@ -28,16 +28,16 @@ public class CheckBoxDialogFragment extends BaseDialogFragment{
         return builder;
     }
 
-    @Override
-    public void onPause() {
-        exit();
-        super.onPause();
-    }
-
-    private void exit() {
-        if (null != mInfo.activity) {
-            mInfo.activity.finish();
-        }
-    }
+//    @Override
+//    public void onPause() {
+//        exit();
+//        super.onPause();
+//    }
+//
+//    private void exit() {
+//        if (null != mInfo.activity) {
+//            mInfo.activity.finish();
+//        }
+//    }
 
 }

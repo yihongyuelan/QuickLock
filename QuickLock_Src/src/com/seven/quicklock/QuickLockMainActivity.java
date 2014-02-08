@@ -10,6 +10,7 @@ import com.seven.quicklock.QuickLockActiveDialog.PositiveButtonListener;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -18,6 +19,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -27,8 +31,8 @@ import android.content.Intent;
 public class QuickLockMainActivity extends Activity {
     private static final String PKG_NAME = "com.seven.quicklock";
     private static final String TAG = "QuickLockActiveDialog";
+    private static final int mNotificationId = 0x00;
     private DevicePolicyManager mPolicyManager;
-    private PowerManager mPowerManager;
     private boolean isAddShortCut = false;
     private Context mContext;
     private Activity mActivity;
@@ -36,14 +40,38 @@ public class QuickLockMainActivity extends Activity {
     private DialogInfo mDialogInfo;
     private CheckBoxDialogFragment mDialogFragment;
     private QuickLockUtils mUtils;
-    private boolean shouldCreateShortcuts = false;
+    private boolean shouldCreateShortcuts = true;
+    private boolean isFromIntent = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         init();
-        lockScreen();
+        isFromIntent = getIntent().getBooleanExtra("NotiClicked", false);
+        if (isFromIntent) {
+            lockScreen();
+        }else {
+            createNotification();
+            lockScreen();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e("Seven", "xxxxxxx");
+        if (resultCode == RESULT_OK) {
+            if (shouldCreateShortcuts) {
+                mUtils.addShortCut(mContext, PKG_NAME);
+            }
+        }
+        exit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.e("Seven", "0000000");
+        super.onDestroy();
     }
 
     private void init() {
@@ -51,7 +79,6 @@ public class QuickLockMainActivity extends Activity {
         mActivity = this;
         mUtils = QuickLockUtils.getInstance();
         mPolicyManager = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
-        mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
         mComponetName = new ComponentName(this, QuickLockDeviceReceiver.class);
         mDialogInfo = getDialogInfo();
         mDialogFragment = new CheckBoxDialogFragment(mDialogInfo);
@@ -87,7 +114,6 @@ public class QuickLockMainActivity extends Activity {
     public class PositiveButtonListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            Log.i("Seven", "PositiveButton click");
             activeDevice();
             dismissActiveDialog();
         }
@@ -96,15 +122,14 @@ public class QuickLockMainActivity extends Activity {
     public class NegativeButtonListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            Log.i("Seven", "NegativeButton click");
             dismissActiveDialog();
+            exit();
         }
     }
 
     public class CheckChangeListener implements OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            Log.i("Seven", "isChecked="+isChecked);
             shouldCreateShortcuts = isChecked;
         }
     }
@@ -113,7 +138,6 @@ public class QuickLockMainActivity extends Activity {
         boolean isActive = mPolicyManager.isAdminActive(mComponetName);
         if (isActive) {
             mPolicyManager.lockNow();
-            turnOffScreen();
             exit();
         } else {
             showActiveDialog();
@@ -125,22 +149,33 @@ public class QuickLockMainActivity extends Activity {
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mComponetName);
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
                 getString(R.string.admin_device_explain));
-        startActivity(intent);
-        if (shouldCreateShortcuts) {
-            //can't work
-            //mUtils.addShortCut(mContext, PKG_NAME);
-        }
+        startActivityForResult(intent, 23);
     }
 
     private void exit() {
         finish();
     }
 
-    /* turn off the screen when lockNow active */
-    private void turnOffScreen() {
-        // mPowerManager.goToSleep(SystemClock.uptimeMillis());
-        // mPowerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
-        // "QuickLock...");
+    private void createNotification() {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                 .setSmallIcon(R.drawable.quicklock)
+                 .setPriority(Notification.PRIORITY_MIN)
+                 .setOngoing(true)
+                 .setContentTitle("Quick lock is here")
+                 .setContentText("Click to lock now");
+
+        Intent resultIntent = new Intent(this, QuickLockMainActivity.class);
+        resultIntent.putExtra("NotiClicked", true);
+        PendingIntent resultPendingIntent =
+            PendingIntent.getActivity(
+            this,
+            0,
+            resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        );
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
 }
